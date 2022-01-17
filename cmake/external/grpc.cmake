@@ -24,7 +24,7 @@ ExternalProject_Add(
   DOWNLOAD_DIR ${FIREBASE_DOWNLOAD_DIR}
 
   GIT_REPOSITORY https://github.com/dconeybe/grpc
-  GIT_TAG d70fa7fc979c67f209a6d092d8a71c0bfdf4a964
+  GIT_TAG 386ffee28e27522daed0484a731fede4f7edb4c4
 
   PREFIX ${PROJECT_BINARY_DIR}
   SOURCE_DIR ${PROJECT_BINARY_DIR}/src/grpc
