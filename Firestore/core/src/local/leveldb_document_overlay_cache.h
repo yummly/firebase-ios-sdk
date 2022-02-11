@@ -33,6 +33,7 @@ class User;
 
 namespace local {
 
+class LevelDbDocumentOverlayCacheTestHelper;
 class LevelDbDocumentOverlayKey;
 class LevelDbPersistence;
 class LocalSerializer;
@@ -62,11 +63,26 @@ class LevelDbDocumentOverlayCache final : public DocumentOverlayCache {
   OverlayByDocumentKeyMap GetOverlays(const model::ResourcePath& collection,
                                       int since_batch_id) const override;
 
-  OverlayByDocumentKeyMap GetOverlays(const std::string& collection_group,
+  OverlayByDocumentKeyMap GetOverlays(absl::string_view collection_group,
                                       int since_batch_id,
                                       std::size_t count) const override;
 
  private:
+  friend class LevelDbDocumentOverlayCacheTestHelper;
+
+  // Returns the number of index entries of the various types.
+  // These methods exist for unit testing only.
+  int GetLargestBatchIdIndexEntryCount() const;
+  int GetCollectionIndexEntryCount() const;
+  int GetCollectionGroupIndexEntryCount() const;
+
+  int GetOverlayCount() const override;
+  int CountEntriesWithKeyPrefix(const std::string& key_prefix) const;
+
+  absl::optional<model::mutation::Overlay> GetOverlay(
+      absl::string_view encoded_key,
+      const LevelDbDocumentOverlayKey& decoded_key) const;
+
   model::mutation::Overlay ParseOverlay(
       const LevelDbDocumentOverlayKey& key,
       absl::string_view encoded_mutation) const;
@@ -77,10 +93,48 @@ class LevelDbDocumentOverlayCache final : public DocumentOverlayCache {
 
   void DeleteOverlay(const model::DocumentKey& key);
 
-  void ForEachOverlay(
+  void DeleteOverlay(absl::string_view encoded_key,
+                     const LevelDbDocumentOverlayKey& decoded_key);
+
+  void DeleteLargestBatchIdIndexEntryFor(
+      absl::string_view encoded_key,
+      const LevelDbDocumentOverlayKey& decoded_key);
+
+  void PutLargestBatchIdIndexEntryFor(
+      absl::string_view encoded_key,
+      const LevelDbDocumentOverlayKey& decoded_key);
+
+  void ForEachKeyWithLargestBatchId(
+      int largest_batch_id,
       std::function<void(absl::string_view encoded_key,
-                         const LevelDbDocumentOverlayKey& decoded_key,
-                         absl::string_view encoded_mutation)>) const;
+                         LevelDbDocumentOverlayKey&& decoded_key)>) const;
+
+  void DeleteCollectionIndexEntryFor(
+      absl::string_view encoded_key,
+      const LevelDbDocumentOverlayKey& decoded_key);
+
+  void PutCollectionIndexEntryFor(absl::string_view encoded_key,
+                                  const LevelDbDocumentOverlayKey& decoded_key);
+
+  void ForEachKeyInCollection(
+      const model::ResourcePath& collection,
+      int since_batch_id,
+      std::function<void(absl::string_view encoded_key,
+                         LevelDbDocumentOverlayKey&& decoded_key)>) const;
+
+  void ForEachKeyInCollectionGroup(
+      absl::string_view collection_group,
+      int since_batch_id,
+      std::function<bool(absl::string_view encoded_key,
+                         LevelDbDocumentOverlayKey&& decoded_key)>) const;
+
+  void DeleteCollectionGroupIndexEntryFor(
+      absl::string_view encoded_key,
+      const LevelDbDocumentOverlayKey& decoded_key);
+
+  void PutCollectionGroupIndexEntryFor(
+      absl::string_view encoded_key,
+      const LevelDbDocumentOverlayKey& decoded_key);
 
   // The LevelDbDocumentOverlayCache instance is owned by LevelDbPersistence.
   LevelDbPersistence* db_;

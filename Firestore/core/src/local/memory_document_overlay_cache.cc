@@ -91,7 +91,7 @@ MemoryDocumentOverlayCache::GetOverlays(const ResourcePath& collection,
 }
 
 DocumentOverlayCache::OverlayByDocumentKeyMap
-MemoryDocumentOverlayCache::GetOverlays(const std::string& collection_group,
+MemoryDocumentOverlayCache::GetOverlays(absl::string_view collection_group,
                                         int since_batch_id,
                                         std::size_t count) const {
   // NOTE: This method is only used by the backfiller, which will not run for
@@ -123,6 +123,10 @@ MemoryDocumentOverlayCache::GetOverlays(const std::string& collection_group,
   }
 
   return result;
+}
+
+int MemoryDocumentOverlayCache::GetOverlayCount() const {
+  return overlays_.size();
 }
 
 void MemoryDocumentOverlayCache::SaveOverlay(int largest_batch_id,

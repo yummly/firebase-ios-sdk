@@ -23,6 +23,7 @@
 #include "Firestore/core/src/util/comparison.h"
 #include "Firestore/core/src/util/hard_assert.h"
 #include "Firestore/core/src/util/hashing.h"
+#include "absl/strings/string_view.h"
 
 namespace firebase {
 namespace firestore {
@@ -107,9 +108,17 @@ const ResourcePath& DocumentKey::path() const {
 }
 
 /** Returns true if the document is in the specified collection_id. */
-bool DocumentKey::HasCollectionId(const std::string& collection_id) const {
+bool DocumentKey::HasCollectionId(absl::string_view collection_id) const {
+  const auto collection_id_opt = GetCollectionId();
+  return collection_id_opt && collection_id_opt.value() == collection_id;
+}
+
+absl::optional<std::string> DocumentKey::GetCollectionId() const {
   size_t size = path().size();
-  return size >= 2 && path()[size - 2] == collection_id;
+  if (size < 2) {
+    return absl::nullopt;
+  }
+  return path()[size - 2];
 }
 
 size_t DocumentKeyHash::operator()(const DocumentKey& key) const {
