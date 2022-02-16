@@ -16,7 +16,9 @@
 
 #include "Firestore/core/src/local/leveldb_key.h"
 
+#include "Firestore/core/src/local/leveldb_persistence.h"
 #include "Firestore/core/src/util/string_util.h"
+#include "Firestore/core/test/unit/local/persistence_testing.h"
 #include "Firestore/core/test/unit/testutil/testutil.h"
 #include "absl/strings/match.h"
 #include "gtest/gtest.h"
@@ -692,6 +694,105 @@ TEST(LevelDbDocumentOverlayKeyTest, Description) {
       "[document_overlays: user_id=foo-bar?baz!quux path=coll/doc]",
       LevelDbDocumentOverlayKey::Key("foo-bar?baz!quux",
                                      testutil::Key("coll/doc")));
+}
+
+enum class Animal {
+  kCat,
+  kDog,
+  kHamster,
+};
+
+struct DenverLevelDbTableKeyEncoder : public LevelDbKeyEncoder<int> {
+  std::string operator()(LevelDbTableBase& table, const int& key) const override {
+    return std::string(table.user_id()) + std::to_string(key);
+  }
+};
+
+struct DenverLevelDbTableValueEncoder : public LevelDbValueEncoder<Animal> {
+  std::string operator()(LevelDbTableBase&, const Animal& value) const override {
+    switch (value) {
+      case Animal::kCat:
+        return "cat";
+      case Animal::kDog:
+        return "dog";
+      case Animal::kHamster:
+        return "hamster";
+      default:
+        return "other";
+    }
+  }
+};
+
+struct DenverLevelDbTableValueDecoder : public LevelDbValueDecoder<Animal> {
+  Animal operator()(LevelDbTableBase&, absl::string_view value) const override {
+    if (value == "cat") {
+      return Animal::kCat;
+    } else if (value == "dog") {
+      return Animal::kDog;
+    } else if (value == "hamster") {
+      return Animal::kHamster;
+    } else {
+      return Animal::kCat;
+    }
+  }
+};
+
+class DenverLevelDbTableIndex1 : public LevelDbTableListener<int, Animal> {
+ public:
+  void OnPut(LevelDbTableBase& table, const int& key, const Animal& value, absl::string_view encoded_key) override {
+    (void)table;
+    (void)key;
+    (void)value;
+    (void)encoded_key;
+  }
+
+  void OnDelete(LevelDbTableBase& table, const int& key, absl::string_view encoded_key) override {
+    (void)table;
+    (void)key;
+    (void)encoded_key;
+  }
+};
+
+class DenverLevelDbTable : public LevelDbTable<int, Animal, DenverLevelDbTableKeyEncoder, DenverLevelDbTableValueEncoder, DenverLevelDbTableValueDecoder, DenverLevelDbTableIndex1> {
+ public:
+  using LevelDbTable::LevelDbTable;
+};
+
+TEST(LevelDbTableTest, Description) {
+  auto persistence = LevelDbPersistenceForTesting();
+  persistence->Run("test", [&] {
+    DenverLevelDbTable table("user_id", "table_name", *persistence->current_transaction());
+    table.Put(1, Animal::kDog);
+    table.Put(2, Animal::kCat);
+    table.Put(3, Animal::kHamster);
+
+    EXPECT_FALSE(table.Get(0));
+    EXPECT_FALSE(table.Get(4));
+
+    {
+      auto value = table.Get(1);
+      EXPECT_TRUE(value);
+      if (value) {
+        EXPECT_EQ(*value, Animal::kDog);
+      }
+    }
+
+    {
+      auto value = table.Get(2);
+      EXPECT_TRUE(value);
+      if (value) {
+        EXPECT_EQ(*value, Animal::kCat);
+      }
+    }
+
+    {
+      auto value = table.Get(3);
+      EXPECT_TRUE(value);
+      if (value) {
+        EXPECT_EQ(*value, Animal::kHamster);
+      }
+    }
+  });
 }
 
 #undef AssertExpectedKeyDescription

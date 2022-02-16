@@ -18,8 +18,10 @@
 #define FIRESTORE_CORE_SRC_LOCAL_LEVELDB_KEY_H_
 
 #include <string>
+#include <tuple>
 #include <utility>
 
+#include "Firestore/core/src/local/leveldb_transaction.h"
 #include "Firestore/core/src/model/document_key.h"
 #include "Firestore/core/src/model/mutation_batch.h"
 #include "Firestore/core/src/model/resource_path.h"
@@ -1091,6 +1093,185 @@ class LevelDbDocumentOverlayCollectionIndexKey {
   model::BatchId largest_batch_id_ = -1;
   std::string document_overlays_key_;
 };
+
+class LevelDbTableBase {
+ public:
+  LevelDbTableBase(absl::string_view user_id, absl::string_view table_name, LevelDbTransaction& transaction) : user_id_(user_id), table_name_(table_name), transaction_(transaction) {
+  }
+
+  virtual ~LevelDbTableBase() = default;
+
+  const std::string& user_id() const& {
+    return user_id_;
+  }
+
+  std::string&& user_id() && {
+    return std::move(user_id_);
+  }
+
+  const std::string& table_name() const& {
+    return table_name_;
+  }
+
+  std::string&& table_name() && {
+    return std::move(table_name_);
+  }
+
+  LevelDbTransaction& transaction() {
+    return transaction_;
+  }
+
+ private:
+  std::string user_id_;
+  std::string table_name_;
+  LevelDbTransaction& transaction_;
+};
+
+
+template <typename T>
+struct LevelDbKeyEncoder {
+  virtual ~LevelDbKeyEncoder() = default;
+  virtual std::string operator()(LevelDbTableBase&, const T& key) const = 0;
+};
+
+template <typename T>
+struct LevelDbValueEncoder {
+  virtual ~LevelDbValueEncoder() = default;
+  virtual std::string operator()(LevelDbTableBase&, const T& value) const = 0;
+};
+
+template <typename T>
+struct LevelDbValueDecoder {
+  virtual ~LevelDbValueDecoder() = default;
+  virtual T operator()(LevelDbTableBase&, absl::string_view value) const = 0;
+};
+
+template <typename KeyType, typename ValueType>
+class LevelDbTableListener {
+ public:
+  virtual ~LevelDbTableListener() = default;
+
+  virtual void OnPut(LevelDbTableBase&, const KeyType& key, const ValueType& value, absl::string_view encoded_key) = 0;
+
+  virtual void OnDelete(LevelDbTableBase&, const KeyType& key, absl::string_view encoded_key) = 0;
+};
+
+template <typename KeyType,
+          typename ValueType,
+          typename KeyTypeEncoder = LevelDbKeyEncoder<KeyType>,
+          typename ValueTypeEncoder = LevelDbValueEncoder<ValueType>,
+          typename ValueTypeDecoder = LevelDbValueDecoder<ValueType>,
+          typename... ListenerType
+          >
+class LevelDbTable : public LevelDbTableBase {
+ public:
+  using LevelDbTableBase::LevelDbTableBase;
+
+  void Delete(const KeyType& key) {
+    const std::string encoded_key = key_encoder_(*this, key);
+    transaction().Delete(encoded_key);
+    NotifyListenersOnDelete(key, encoded_key);
+  }
+
+  void Put(const KeyType& key, const ValueType& value) {
+    const std::string encoded_key = key_encoder_(*this, key);
+    const std::string encoded_value = value_encoder_(*this, value);
+    transaction().Put(encoded_key, encoded_value);
+    NotifyListenersOnPut(key, value, encoded_key);
+  }
+
+  absl::optional<ValueType> Get(const KeyType& key) {
+    const std::string encoded_key = key_encoder_(*this, key);
+
+    auto it = transaction().NewIterator();
+    it->Seek(encoded_key);
+    if (! (it->Valid() && it->key() == encoded_key)) {
+      return absl::nullopt;
+    }
+
+    return value_decoder_(*this, it->value());
+  }
+
+ private:
+  void NotifyListenersOnPut(const KeyType& key, const ValueType& value, const std::string& encoded_key) {
+    NotifyListenersOnPut<0>(key, value, encoded_key);
+  }
+
+  template <size_t index_index>
+  void NotifyListenersOnPut(const KeyType& key, const ValueType& value, const std::string& encoded_key) {
+    std::get<index_index>(listeners_).OnPut(*this, key, value, encoded_key);
+    NotifyListenersOnPut<index_index + 1>(key, value, encoded_key);
+  }
+
+  template <>
+  void NotifyListenersOnPut<std::tuple_size<std::tuple<ListenerType...>>::value>(const KeyType&, const ValueType&, const std::string&) {
+  }
+
+  void NotifyListenersOnDelete(const KeyType& key, const std::string& encoded_key) {
+    NotifyListenersOnDelete<0>(key, encoded_key);
+  }
+
+  template <size_t index_index>
+  void NotifyListenersOnDelete(const KeyType& key, const std::string& encoded_key) {
+    std::get<index_index>(listeners_).OnDelete(*this, key, encoded_key);
+    NotifyListenersOnDelete<index_index + 1>(key, encoded_key);
+  }
+
+  template <>
+  void NotifyListenersOnDelete<std::tuple_size<std::tuple<ListenerType...>>::value>(const KeyType&, const std::string&) {
+  }
+
+  KeyTypeEncoder key_encoder_;
+  ValueTypeEncoder value_encoder_;
+  ValueTypeDecoder value_decoder_;
+  std::tuple<ListenerType...> listeners_;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }  // namespace local
 }  // namespace firestore
