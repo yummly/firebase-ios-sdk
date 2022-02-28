@@ -83,7 +83,7 @@ Simplify your app development, grow your user base, and monetize more effectivel
 
   s.subspec 'ABTesting' do |ss|
     ss.dependency 'Firebase/CoreOnly'
-    ss.dependency 'FirebaseABTesting', '~> 8.12.0'
+    ss.dependency 'FirebaseABTesting', '~> 8.12.2'
     # Standard platforms PLUS watchOS.
     ss.ios.deployment_target = '10.0'
     ss.osx.deployment_target = '10.12'
@@ -183,7 +183,7 @@ Simplify your app development, grow your user base, and monetize more effectivel
 
   s.subspec 'RemoteConfig' do |ss|
     ss.dependency 'Firebase/CoreOnly'
-    ss.dependency 'FirebaseRemoteConfig', '~> 8.12.0'
+    ss.dependency 'FirebaseRemoteConfig', '~> 8.12.2'
     # Standard platforms PLUS watchOS.
     ss.ios.deployment_target = '10.0'
     ss.osx.deployment_target = '10.12'
