@@ -12,7 +12,7 @@ Firebase Performance library to measure performance of Mobile and Web Apps.
   s.authors          = 'Google, Inc.'
 
   s.source           = {
-    :git => 'https://github.com/firebase/firebase-ios-sdk.git',
+    :git => 'https://github.com/yummly/firebase-ios-sdk.git',
     :tag => 'CocoaPods-' + s.version.to_s
   }
   s.social_media_url = 'https://twitter.com/Firebase'

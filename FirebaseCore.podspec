@@ -12,7 +12,7 @@ Firebase Core includes FIRApp and FIROptions which provide central configuration
   s.authors          = 'Google, Inc.'
 
   s.source           = {
-    :git => 'https://github.com/firebase/firebase-ios-sdk.git',
+    :git => 'https://github.com/yummly/firebase-ios-sdk.git',
     :tag => 'CocoaPods-' + s.version.to_s
   }
 
