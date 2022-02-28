@@ -19,6 +19,7 @@
 #import "FirebaseCore/Sources/Private/FirebaseCoreInternal.h"
 #import "Interop/Analytics/Public/FIRAnalyticsInterop.h"
 #import "FirebaseABTesting/Sources/Public/FirebaseABTesting/FIRExperimentController.h"
+#import "FirebaseABTesting/FIRExperimentDelegate.h"
 
 @implementation ABTConditionalUserPropertyController {
   dispatch_queue_t _analyticOperationQueue;
