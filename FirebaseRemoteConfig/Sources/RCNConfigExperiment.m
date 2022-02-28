@@ -20,6 +20,7 @@
 #import "FirebaseCore/Sources/Private/FirebaseCoreInternal.h"
 #import "FirebaseRemoteConfig/Sources/RCNConfigDBManager.h"
 #import "FirebaseRemoteConfig/Sources/RCNConfigDefines.h"
+#import "FirebaseABTesting/FIRExperimentDelegate.h""
 
 static NSString *const kExperimentMetadataKeyLastStartTime = @"last_experiment_start_time";
 
@@ -82,6 +83,8 @@ static NSString *const kMethodNameLatestStartTime =
           FIRLogWarning(kFIRLoggerRemoteConfig, @"I-RCN000031",
                         @"Experiment payload could not be parsed as JSON.");
         } else {
+          ABTExperimentPayload *experimentPayload = [ABTExperimentPayload parseFromData:experiment];
+          [strongSelf->_experimentController.experimentDelegate handleExperimentStarted:experimentPayload.experimentId variantId:experimentPayload.variantId origin:@"cache"];
           [strongSelf->_experimentPayloads addObject:experiment];
         }
       }

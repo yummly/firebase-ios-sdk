@@ -140,6 +140,9 @@
               @"variant ID %@ triggered event %@.",
               experimentID, variantID, payload.triggerEvent);
 
+  // this was added to support callback of experiment triggered
+  [[FIRExperimentController sharedInstance].experimentDelegate handleExperimentStarted:experimentID variantId:variantID origin:origin];
+
   // Log setEvent (experiment lifecycle event to be set when an experiment is set)
   [self logEventWithOrigin:origin payload:payload events:events];
 }

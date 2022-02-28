@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'FirebaseABTesting'
-  s.version          = '8.12.0'
+  s.version          = '8.12.2'
   s.summary          = 'Firebase ABTesting'
 
   s.description      = <<-DESC
@@ -16,8 +16,8 @@ Firebase Cloud Messaging and Firebase Remote Config in your app.
   s.authors          = 'Google, Inc.'
 
   s.source           = {
-    :git => 'https://github.com/firebase/firebase-ios-sdk.git',
-    :tag => 'CocoaPods-' + s.version.to_s
+    :git => 'https://github.com/yummly/firebase-ios-sdk.git',
+    :tag =>  s.version.to_s
   }
 
   s.social_media_url = 'https://twitter.com/Firebase'
