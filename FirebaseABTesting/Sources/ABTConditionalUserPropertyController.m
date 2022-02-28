@@ -18,6 +18,8 @@
 #import "FirebaseABTesting/Sources/Public/FirebaseABTesting/FIRLifecycleEvents.h"
 #import "FirebaseCore/Sources/Private/FirebaseCoreInternal.h"
 #import "Interop/Analytics/Public/FIRAnalyticsInterop.h"
+#import "FirebaseABTesting/Sources/Public/FirebaseABTesting/FIRExperimentController.h"
+#import "FirebaseABTesting/FIRExperimentDelegate.h"
 
 @implementation ABTConditionalUserPropertyController {
   dispatch_queue_t _analyticOperationQueue;
@@ -139,6 +141,9 @@
               @"Set conditional user property, experiment ID %@ with "
               @"variant ID %@ triggered event %@.",
               experimentID, variantID, payload.triggerEvent);
+
+  // this was added to support callback of experiment triggered
+  [[FIRExperimentController sharedInstance].experimentDelegate handleExperimentStarted:experimentID variantId:variantID origin:origin];
 
   // Log setEvent (experiment lifecycle event to be set when an experiment is set)
   [self logEventWithOrigin:origin payload:payload events:events];

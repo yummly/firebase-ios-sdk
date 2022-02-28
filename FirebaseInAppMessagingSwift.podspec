@@ -13,7 +13,7 @@ See more product details at https://firebase.google.com/products/in-app-messagin
   s.authors                 = 'Google, Inc.'
 
   s.source                  = {
-    :git => 'https://github.com/Firebase/firebase-ios-sdk.git',
+    :git => 'https://github.com/yummly/firebase-ios-sdk.git',
     :tag => 'CocoaPods-' + s.version.to_s
   }
 
