@@ -22,6 +22,7 @@ typedef NS_ENUM(int32_t, ABTExperimentPayloadExperimentOverflowPolicy);
 NS_ASSUME_NONNULL_BEGIN
 
 @class FIRLifecycleEvents;
+@protocol FIRExperimentDelegate;
 
 /// The default experiment overflow policy, that is to discard the experiment with the oldest start
 /// time when users start the experiment on the web console.
@@ -34,6 +35,9 @@ NS_SWIFT_NAME(ExperimentController)
 
 /// Returns the FIRExperimentController singleton.
 + (FIRExperimentController *)sharedInstance;
+
+///  sets the Yummly required FIRExperimentDelegate
+@property (nonatomic, weak) id<FIRExperimentDelegate> experimentDelegate;
 
 /// Updates the list of experiments with an optional completion handler. Experiments already
 /// existing in payloads are not affected, whose state and payload is preserved. This method
