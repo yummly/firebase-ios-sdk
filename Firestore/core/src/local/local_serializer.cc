@@ -35,7 +35,6 @@
 #include "Firestore/core/src/local/target_data.h"
 #include "Firestore/core/src/model/field_path.h"
 #include "Firestore/core/src/model/mutable_document.h"
-#include "Firestore/core/src/model/mutation/overlay.h"
 #include "Firestore/core/src/model/mutation_batch.h"
 #include "Firestore/core/src/model/snapshot_version.h"
 #include "Firestore/core/src/nanopb/byte_string.h"
@@ -64,7 +63,6 @@ using model::MutationBatch;
 using model::ObjectValue;
 using model::Segment;
 using model::SnapshotVersion;
-using model::mutation::Overlay;
 using nanopb::ByteString;
 using nanopb::CheckedSize;
 using nanopb::CopyBytesArray;
@@ -501,9 +499,12 @@ LocalSerializer::EncodeFieldIndexSegments(
   result->query_scope =
       google_firestore_admin_v1_Index_QueryScope_COLLECTION_GROUP;
 
-  result->fields_count = segments.size();
+  // Explicitly cast the result of segments.size() to suppress compiler warnings
+  // about implicit conversion resulting in potential loss of precision.
+  const auto segments_size = static_cast<pb_size_t>(segments.size());
+  result->fields_count = segments_size;
   result->fields =
-      MakeArray<google_firestore_admin_v1_Index_IndexField>(segments.size());
+      MakeArray<google_firestore_admin_v1_Index_IndexField>(segments_size);
   int i = 0;
   for (const auto& segment : segments) {
     google_firestore_admin_v1_Index_IndexField field;
