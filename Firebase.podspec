@@ -93,12 +93,12 @@ Simplify your app development, grow your user base, and monetize more effectivel
 
   s.subspec 'AppDistribution' do |ss|
     ss.dependency 'Firebase/CoreOnly'
-    ss.ios.dependency 'FirebaseAppDistribution', '~> 8.15.0-beta'
+    ss.ios.dependency 'FirebaseAppDistribution', '~> 8.15.0'
   end
 
   s.subspec 'AppCheck' do |ss|
     ss.dependency 'Firebase/CoreOnly'
-    ss.dependency 'FirebaseAppCheck', '~> 8.15.0-beta'
+    ss.dependency 'FirebaseAppCheck', '~> 8.15.0'
     ss.ios.deployment_target = '9.0'
     ss.osx.deployment_target = '10.12'
     ss.tvos.deployment_target = '10.0'
@@ -152,7 +152,7 @@ Simplify your app development, grow your user base, and monetize more effectivel
 
   s.subspec 'InAppMessaging' do |ss|
     ss.dependency 'Firebase/CoreOnly'
-    ss.ios.dependency 'FirebaseInAppMessaging', '~> 8.15.0-beta'
+    ss.ios.dependency 'FirebaseInAppMessaging', '~> 8.15.0'
   end
 
   s.subspec 'Installations' do |ss|
@@ -172,7 +172,7 @@ Simplify your app development, grow your user base, and monetize more effectivel
 
   s.subspec 'MLModelDownloader' do |ss|
     ss.dependency 'Firebase/CoreOnly'
-    ss.dependency 'FirebaseMLModelDownloader', '~> 8.15.0-beta'
+    ss.dependency 'FirebaseMLModelDownloader', '~> 8.15.0'
   end
 
   s.subspec 'Performance' do |ss|
